@@ -13,23 +13,22 @@ import (
 func testFormat(
 	buf *bytes.Buffer,
 	now time.Time,
-	lvl qblog.Level,
+	lvl Level,
 	title, file string,
 	line int,
 	ctx qblog.Context,
 	message io.WriterTo,
-) {
-	fmt.Fprintf(buf, "%s %s %s:%d <%s>",
+) (needNewline bool) {
+	fmt.Fprintf(buf, "%s %s <%s>\n",
 		title,
 		qblog.LevelName(lvl),
-		file, line,
 		message)
+	return false
 }
 
 func ExampleNewApi() {
-	l := New(qblog.Linfo, "qbsllm", os.Stdout, testFormat)
-	l.SetFlags(qblog.FsrcLoc)
+	l := New(Linfo, "qbsllm", os.Stdout, testFormat)
 	l.InfoA("just a `adj` message", "fancy")
 	// Output:
-	// qbsllm INFO qbsllm_test.go:32 <just a `adj:fancy` message>
+	// qbsllm INFO <just a `adj:fancy` message>
 }

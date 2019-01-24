@@ -7,11 +7,41 @@ import (
 	"git.fractalqb.de/fractalqb/sllm"
 )
 
+const (
+	FsrcLoc  = qblog.FsrcLoc
+	FsrcPath = qblog.FsrcPath
+)
+
+type Level = qblog.Level
+
+const (
+	LmostIrrelevant Level = qblog.LmostIrrelevant
+	Lnormal         Level = qblog.Lnormal
+	LmostImportant  Level = qblog.LmostImportant
+	Loff            Level = qblog.Loff
+
+	Lpanic Level = qblog.Lpanic
+	Lfatal Level = qblog.Lfatal
+
+	Ltrace Level = qblog.Ltrace
+	Ldebug Level = qblog.Ldebug
+	Linfo  Level = qblog.Linfo
+	Lwarn  Level = qblog.Lwarn
+	Lerror Level = qblog.Lerror
+)
+
+type Formatter = qblog.Formatter
+type Msg = qblog.Msg
+
+func Fmt(format string, a ...interface{}) qblog.FmtMsg { return qblog.Fmt(format, a...) }
+
+func Err(err error) qblog.ErrMsg { return qblog.Err(err) }
+
 type Logger struct {
 	qblog.Logger
 }
 
-func New(level qblog.Level, title string, wr io.Writer, fmt qblog.Formatter) *Logger {
+func New(level Level, title string, wr io.Writer, fmt Formatter) *Logger {
 	tmp := qblog.New(level, title, wr, fmt)
 	res := &Logger{*tmp}
 	return res
@@ -19,20 +49,12 @@ func New(level qblog.Level, title string, wr io.Writer, fmt qblog.Formatter) *Lo
 
 const calldepth = 3
 
-func (l *Logger) Msg(level qblog.Level, message string) {
-	l.Out(calldepth, level, qblog.Msg(message))
-}
-
 func (l *Logger) Args(level qblog.Level, tmpl string, args ...interface{}) {
 	l.Out(calldepth, level, sllm.Args(tmpl, args...))
 }
 
 func (l *Logger) Map(level qblog.Level, tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, level, sllm.Map(tmpl, args))
-}
-
-func (l *Logger) Trace(message string) {
-	l.Out(calldepth, qblog.Ltrace, qblog.Msg(message))
 }
 
 func (l *Logger) TraceA(tmpl string, args ...interface{}) {
@@ -43,20 +65,12 @@ func (l *Logger) TraceM(tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, qblog.Ltrace, sllm.Map(tmpl, args))
 }
 
-func (l *Logger) Debug(message string) {
-	l.Out(calldepth, qblog.Ldebug, qblog.Msg(message))
-}
-
 func (l *Logger) DebugA(tmpl string, args ...interface{}) {
 	l.Out(calldepth, qblog.Ldebug, sllm.Args(tmpl, args...))
 }
 
 func (l *Logger) DebugM(tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, qblog.Ldebug, sllm.Map(tmpl, args))
-}
-
-func (l *Logger) Info(message string) {
-	l.Out(calldepth, qblog.Linfo, qblog.Msg(message))
 }
 
 func (l *Logger) InfoA(tmpl string, args ...interface{}) {
@@ -67,20 +81,12 @@ func (l *Logger) InfoM(tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, qblog.Linfo, sllm.Map(tmpl, args))
 }
 
-func (l *Logger) Warn(message string) {
-	l.Out(calldepth, qblog.Lwarn, qblog.Msg(message))
-}
-
 func (l *Logger) WarnA(tmpl string, args ...interface{}) {
 	l.Out(calldepth, qblog.Lwarn, sllm.Args(tmpl, args...))
 }
 
 func (l *Logger) WarnM(tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, qblog.Lwarn, sllm.Map(tmpl, args))
-}
-
-func (l *Logger) Error(message string) {
-	l.Out(calldepth, qblog.Lerror, qblog.Msg(message))
 }
 
 func (l *Logger) ErrorA(tmpl string, args ...interface{}) {
@@ -91,10 +97,6 @@ func (l *Logger) ErrorM(tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, qblog.Lerror, sllm.Map(tmpl, args))
 }
 
-func (l *Logger) Panic(message string) {
-	l.Out(calldepth, qblog.Lpanic, qblog.Msg(message))
-}
-
 func (l *Logger) PanicA(tmpl string, args ...interface{}) {
 	l.Out(calldepth, qblog.Lpanic, sllm.Args(tmpl, args...))
 }
@@ -103,14 +105,10 @@ func (l *Logger) PanicM(tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, qblog.Lpanic, sllm.Map(tmpl, args))
 }
 
-func (l *Logger) Fatal(message string) {
-	l.Out(calldepth, qblog.Lfatal, qblog.Msg(message))
+func (l *Logger) Fatal(message io.WriterTo) {
+	l.Out(calldepth, qblog.Lfatal, message)
 }
 
 func (l *Logger) FatalA(tmpl string, args ...interface{}) {
 	l.Out(calldepth, qblog.Lfatal, sllm.Args(tmpl, args...))
-}
-
-func (l *Logger) FatalM(tmpl string, args sllm.ArgMap) {
-	l.Out(calldepth, qblog.Lfatal, sllm.Map(tmpl, args))
 }
