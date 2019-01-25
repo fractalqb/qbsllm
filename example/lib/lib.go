@@ -17,6 +17,6 @@ func Yalf(s string, f bool) error {
 		log.Error(l.Err(err))
 		return err
 	}
-	log.DebugA("yalf called with `s`and `f`", s, f)
+	log.DebugA("yalf called with `s` and `f`", s, f)
 	return nil
 }
