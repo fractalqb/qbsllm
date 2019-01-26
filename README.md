@@ -1,6 +1,7 @@
 # qbsllm – Slim Logging with Go
 [![Build Status](https://travis-ci.org/fractalqb/qbsllm.svg)](https://travis-ci.org/fractalqb/qbsllm)
-[![Test Coverage](https://img.shields.io/badge/coverage-0%25-red.svg)](file:coverage.html)
+[![Build Status](https://travis-ci.org/fractalqb/qbsllm.svg)](https://travis-ci.org/fractalqb/qbsllm)
+[![codecov](https://codecov.io/gh/fractalqb/qbsllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/qbsllm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/qbsllm)](https://goreportcard.com/report/github.com/fractalqb/qbsllm)
 [![GoDoc](https://godoc.org/github.com/fractalqb/qbsllm?status.svg)](https://godoc.org/github.com/fractalqb/qbsllm)
 

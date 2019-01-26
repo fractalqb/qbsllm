@@ -14,8 +14,8 @@ var (
 func main() {
 	logCfg.SetLevel(c4hgol.LeastImportant)
 	log.SetFlags(l.FsrcLoc)
-	log.Info(l.Msg("gonna call lib.Yalf twice"))
+	log.Info(l.Str("gonna call lib.Yalf twice"))
 	lib.Yalf("", false)
 	lib.Yalf("second time", true)
-	log.Info(l.Msg("DONE calling lib.Yalf"))
+	log.Info(l.Str("DONE calling lib.Yalf"))
 }

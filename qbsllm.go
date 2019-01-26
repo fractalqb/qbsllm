@@ -31,7 +31,7 @@ const (
 )
 
 type Formatter = qblog.Formatter
-type Msg = qblog.Msg
+type Str = qblog.Str
 
 func Fmt(format string, a ...interface{}) qblog.FmtMsg { return qblog.Fmt(format, a...) }
 
