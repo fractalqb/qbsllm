@@ -19,16 +19,17 @@ func testFormat(
 	ctx qblog.Context,
 	message io.WriterTo,
 ) (needNewline bool) {
-	fmt.Fprintf(buf, "%s %s <%s>\n",
+	fmt.Fprintf(buf, "%s %s <",
 		title,
-		qblog.LevelName(lvl),
-		message)
+		qblog.LevelName(lvl))
+	message.WriteTo(buf)
+	buf.WriteString(">\n")
 	return false
 }
 
 func ExampleNewApi() {
 	l := New(Linfo, "qbsllm", os.Stdout, testFormat)
-	l.InfoA("just a `adj` message", "fancy")
+	l.Infoa("just a `adj` message", "fancy")
 	// Output:
 	// qbsllm INFO <just a `adj:fancy` message>
 }
