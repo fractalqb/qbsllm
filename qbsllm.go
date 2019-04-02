@@ -50,14 +50,26 @@ func New(level Level, title string, wr io.Writer, fmt Formatter) *Logger {
 
 const calldepth = 3
 
-func (l *Logger) Args(level qblog.Level, tmpl string, args ...interface{}) {
+func (l *Logger) Str(level Level, msg string) {
+	l.Out(calldepth, level, qblog.Str(msg))
+}
+
+func (l *Logger) Err(level Level, err error) {
+	l.Out(calldepth, level, qblog.Err(err))
+}
+
+func (l *Logger) Fmt(level Level, format string, a ...interface{}) {
+	l.Out(calldepth, level, qblog.Fmt(format, a))
+}
+
+func (l *Logger) Args(level Level, tmpl string, args ...interface{}) {
 	l.Out(calldepth, level, wrSllm{
 		tmpl: tmpl,
 		swp:  sllm.Args(nil, args...),
 	})
 }
 
-func (l *Logger) Map(level qblog.Level, tmpl string, args sllm.ArgMap) {
+func (l *Logger) Map(level Level, tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, level, wrSllm{
 		tmpl: tmpl,
 		swp:  sllm.Map(nil, args),
