@@ -10,9 +10,6 @@ func Config(log *Logger, sub ...c4hgol.Configurer) c4hgol.Configurer {
 	if len(sub) == 0 {
 		return cfg
 	}
-	topic := c4hgol.Topic{
-		TopicName:  cfg.Name(),
-		Configures: append(sub, cfg),
-	}
+	topic := c4hgol.NewTopic(cfg, sub...)
 	return topic
 }
