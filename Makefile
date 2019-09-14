@@ -6,6 +6,9 @@ README.md: README.md~
 README.html: README.md
 	pandoc -f gfm -t html -s -M title="qbsllm – README" README.md > README.html
 
+depgraph.svg:
+	graphdot -p 'node [shape=box]' | dot -Tsvg -o $@
+
 # → https://blog.golang.org/cover
 cover: coverage.html
 

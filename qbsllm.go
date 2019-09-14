@@ -54,8 +54,9 @@ func (l *Logger) Str(level Level, msg string) {
 	l.Out(calldepth, level, qblog.Str(msg))
 }
 
-func (l *Logger) Err(level Level, err error) {
+func (l *Logger) Err(level Level, err error) error {
 	l.Out(calldepth, level, qblog.Err(err))
+	return err
 }
 
 func (l *Logger) Fmt(level Level, format string, a ...interface{}) {
