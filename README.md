@@ -19,3 +19,6 @@ and
 
 to make a logging library that can coexists peacefully with other
 logging libraries.
+
+## Dependencies
+![Dependency Graph](file:depgraph.svg)

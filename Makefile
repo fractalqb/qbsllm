@@ -1,6 +1,6 @@
 GOSRC:=$(shell find . -name '*.go')
 
-README.md: README.md~
+README.md: README.md~ depgraph.svg
 	cp $< $@
 
 README.html: README.md
