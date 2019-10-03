@@ -17,6 +17,7 @@ benchmark:
 
 cpuprof:
 	go test -cpuprofile cpu.prof -bench BenchmarkExpandArgs
+	go tool pprof -http :6060 qbsllm.test cpu.prof
 # Read with '$ go tool pprof cpu.prof' >>> e.g. '(pprof) web'
 
 coverage.html: coverage.out

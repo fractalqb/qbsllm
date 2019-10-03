@@ -5,7 +5,7 @@ import (
 	"git.fractalqb.de/fractalqb/c4qblog"
 )
 
-func Config(log *Logger, sub ...c4hgol.Configurer) c4hgol.Configurer {
+func Config(log *Logger, sub ...c4hgol.Configurer) c4hgol.ShowSrcConfigurer {
 	cfg := c4qblog.Config(&log.Logger)
 	if len(sub) == 0 {
 		return cfg
