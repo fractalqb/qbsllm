@@ -4,12 +4,13 @@ import (
 	"os"
 	"path/filepath"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/qbsllm"
 )
 
 var (
 	root = qbsllm.New(qbsllm.Lnormal, title(), nil, nil)
-	Cfg  = qbsllm.Config(root)
+	Cfg  = c4hgol.Config(qbsllm.NewConfig(root))
 )
 
 func title() string {

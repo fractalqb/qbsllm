@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/fractalqb/qbsllm.svg)](https://travis-ci.org/fractalqb/qbsllm)
 [![codecov](https://codecov.io/gh/fractalqb/qbsllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/qbsllm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/qbsllm)](https://goreportcard.com/report/github.com/fractalqb/qbsllm)
-[![GoDoc](https://godoc.org/github.com/fractalqb/qbsllm?status.svg)](https://godoc.org/github.com/fractalqb/qbsllm)
+[![GoDoc](https://godoc.org/github.com/fractalqb/qbsllm?status.svg)](https://pkg.go.dev/git.fractalqb.de/fractalqb/qbsllm)
 
 `import "git.fractalqb.de/fractalqb/qbsllm"`
 
