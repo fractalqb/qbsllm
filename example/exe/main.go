@@ -8,7 +8,7 @@ import (
 
 var (
 	log    = qbsllm.New(qbsllm.Lnormal, "qbsllm-example-exe", nil, nil)
-	logCfg = qbsllm.Config(log, lib.LogCfg)
+	logCfg = c4hgol.Config(qbsllm.NewConfig(log), lib.LogCfg)
 )
 
 func main() {

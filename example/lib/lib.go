@@ -3,12 +3,13 @@ package lib
 import (
 	"errors"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/qbsllm"
 )
 
 var (
 	log    = qbsllm.New(qbsllm.Lnormal, "qbsllm-example-lib", nil, nil)
-	LogCfg = qbsllm.Config(log)
+	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
 )
 
 func Yalf(s string, f bool) error {
