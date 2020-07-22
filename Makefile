@@ -1,13 +1,17 @@
 GOSRC:=$(shell find . -name '*.go')
 
+.PHONY: depgraph.svg
+
 README.md: README.md~ depgraph.svg
 	cp $< $@
 
 README.html: README.md
 	pandoc -f gfm -t html -s -M title="qbsllm – README" README.md > README.html
 
+deps: depgraph.svg
+
 depgraph.svg:
-	graphdot -p 'node [shape=box]' | dot -Tsvg -o $@
+	go mod graph | modgraphviz | dot -Tsvg -o $@
 
 # → https://blog.golang.org/cover
 cover: coverage.html

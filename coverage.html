@@ -54,26 +54,333 @@
 			<div id="nav">
 				<select id="files">
 				
+				<option value="file0">git.fractalqb.de/fractalqb/qbsllm/c4sllm.go (0.0%)</option>
+				
+				<option value="file1">git.fractalqb.de/fractalqb/qbsllm/geterror.go (30.0%)</option>
+				
+				<option value="file2">git.fractalqb.de/fractalqb/qbsllm/qbsllm.go (15.4%)</option>
+				
 				</select>
 			</div>
 			<div id="legend">
 				<span>not tracked</span>
 			
-				<span class="cov0">no coverage</span>
-				<span class="cov1">low coverage</span>
-				<span class="cov2">*</span>
-				<span class="cov3">*</span>
-				<span class="cov4">*</span>
-				<span class="cov5">*</span>
-				<span class="cov6">*</span>
-				<span class="cov7">*</span>
-				<span class="cov8">*</span>
-				<span class="cov9">*</span>
-				<span class="cov10">high coverage</span>
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
 			
 			</div>
 		</div>
 		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package qbsllm
+
+import (
+        "git.fractalqb.de/fractalqb/c4hgol"
+        "git.fractalqb.de/fractalqb/c4qblog"
+)
+
+func NewConfig(log *Logger) c4hgol.Configurer <span class="cov0" title="0">{
+        return c4qblog.NewConfig(&amp;log.Logger)
+}</span>
+
+// func Config(log *Logger, sub ...c4hgol.Configurer) c4hgol.ShowSrcConfigurer {
+//         cfg := c4qblog.NewConfig(&amp;log.Logger)
+//         if len(sub) == 0 {
+//                 return cfg
+//         }
+//         topic := c4hgol.NewTopic(cfg, sub...)
+//         return topic
+// }
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package qbsllm
+
+import (
+        "errors"
+        "strings"
+
+        "git.fractalqb.de/fractalqb/qblog"
+        "git.fractalqb.de/fractalqb/sllm"
+)
+
+type errLogger Logger
+
+// Get returns a variant of Logger that only supports the Error* methods to log
+// errors. The new variants return the message part of the log entry as an
+// error object.
+func (l *Logger) Get() *errLogger <span class="cov8" title="1">{ return (*errLogger)(l) }</span>
+
+func (l *errLogger) Errors(msg string) error <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, qblog.Str(msg))
+        return errors.New(msg)
+}</span>
+
+func (l *errLogger) Errore(err error) error <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, qblog.Err(err))
+        return err
+}</span>
+
+func (l *errLogger) Errorf(format string, a ...interface{}) error <span class="cov0" title="0">{
+        wr := qblog.Fmt(format, a...)
+        var sb strings.Builder
+        wr.WriteTo(&amp;sb)
+        l.Out(calldepth, qblog.Lerror, qblog.Str(sb.String()))
+        return errors.New(sb.String())
+}</span>
+
+func (l *errLogger) Errora(tmpl string, args ...interface{}) error <span class="cov8" title="1">{
+        wr := wrSllm{(*Logger)(l), tmpl, sllm.Args(nil, args...)}
+        var sb strings.Builder
+        wr.WriteTo(&amp;sb)
+        l.Out(calldepth, qblog.Lerror, qblog.Str(sb.String()))
+        return errors.New(sb.String())
+}</span>
+
+func (l *errLogger) Errorm(tmpl string, args sllm.ArgMap) error <span class="cov0" title="0">{
+        wr := wrSllm{(*Logger)(l), tmpl, sllm.Map(nil, args)}
+        var sb strings.Builder
+        wr.WriteTo(&amp;sb)
+        l.Out(calldepth, qblog.Lerror, qblog.Str(sb.String()))
+        return errors.New(sb.String())
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package qbsllm
+
+import (
+        "io"
+
+        "git.fractalqb.de/fractalqb/qblog"
+        "git.fractalqb.de/fractalqb/sllm"
+)
+
+const (
+        FsrcLoc  = qblog.FsrcLoc
+        FsrcPath = qblog.FsrcPath
+)
+
+type Level = qblog.Level
+
+const (
+        LmostIrrelevant Level = qblog.LmostIrrelevant
+        Lnormal         Level = qblog.Lnormal
+        LmostImportant  Level = qblog.LmostImportant
+        Loff            Level = qblog.Loff
+
+        Lpanic Level = qblog.Lpanic
+        Lfatal Level = qblog.Lfatal
+
+        Ltrace Level = qblog.Ltrace
+        Ldebug Level = qblog.Ldebug
+        Linfo  Level = qblog.Linfo
+        Lwarn  Level = qblog.Lwarn
+        Lerror Level = qblog.Lerror
+)
+
+type Formatter = qblog.Formatter
+type Str = qblog.Str
+
+func Fmt(format string, a ...interface{}) qblog.FmtMsg <span class="cov0" title="0">{ return qblog.Fmt(format, a...) }</span>
+
+func Err(err error) qblog.ErrMsg <span class="cov0" title="0">{ return qblog.Err(err) }</span>
+
+type Logger struct {
+        qblog.Logger
+        SllmDeco func(sllm.ParamWriter) sllm.ParamWriter
+}
+
+func New(level Level, title string, wr io.Writer, fmt Formatter) *Logger <span class="cov8" title="1">{
+        tmp := qblog.New(level, title, wr, fmt)
+        res := &amp;Logger{*tmp, nil}
+        return res
+}</span>
+
+const calldepth = 3
+
+func (l *Logger) Str(level Level, msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, level, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Err(level Level, err error) error <span class="cov0" title="0">{
+        l.Out(calldepth, level, qblog.Err(err))
+        return err
+}</span>
+
+func (l *Logger) Fmt(level Level, format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, level, qblog.Fmt(format, a))
+}</span>
+
+func (l *Logger) Args(level Level, tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, level, wrSllm{
+                tmpl: tmpl,
+                swp:  sllm.Args(nil, args...),
+        })
+}</span>
+
+func (l *Logger) Map(level Level, tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, level, wrSllm{
+                tmpl: tmpl,
+                swp:  sllm.Map(nil, args),
+        })
+}</span>
+
+func (l *Logger) Traces(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ltrace, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Tracee(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ltrace, qblog.Err(err))
+}</span>
+
+func (l *Logger) Tracef(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ltrace, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Tracea(tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ltrace, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Tracem(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ltrace, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+func (l *Logger) Debugs(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ldebug, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Debuge(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ldebug, qblog.Err(err))
+}</span>
+
+func (l *Logger) Debugf(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ldebug, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Debuga(tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ldebug, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Debugm(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Ldebug, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+func (l *Logger) Infos(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Linfo, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Infoe(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Linfo, qblog.Err(err))
+}</span>
+
+func (l *Logger) Infof(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Linfo, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Infoa(tmpl string, args ...interface{}) <span class="cov8" title="1">{
+        l.Out(calldepth, qblog.Linfo, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Infom(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Linfo, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+func (l *Logger) Warns(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lwarn, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Warne(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lwarn, qblog.Err(err))
+}</span>
+
+func (l *Logger) Warnf(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lwarn, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Warna(tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lwarn, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Warnm(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lwarn, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+func (l *Logger) Errors(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Errore(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, qblog.Err(err))
+}</span>
+
+func (l *Logger) Errorf(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Errora(tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Errorm(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lerror, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+func (l *Logger) Panics(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lpanic, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Panice(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lpanic, qblog.Err(err))
+}</span>
+
+func (l *Logger) Panicf(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lpanic, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Panica(tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lpanic, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Panicm(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lpanic, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+func (l *Logger) Fatals(msg string) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lfatal, qblog.Str(msg))
+}</span>
+
+func (l *Logger) Fatale(err error) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lfatal, qblog.Err(err))
+}</span>
+
+func (l *Logger) Fatalf(format string, a ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lfatal, qblog.Fmt(format, a...))
+}</span>
+
+func (l *Logger) Fatala(tmpl string, args ...interface{}) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lfatal, wrSllm{l, tmpl, sllm.Args(nil, args...)})
+}</span>
+
+func (l *Logger) Fatalm(tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
+        l.Out(calldepth, qblog.Lpanic, wrSllm{l, tmpl, sllm.Map(nil, args)})
+}</span>
+
+type wrSllm struct {
+        log  *Logger
+        tmpl string
+        swp  sllm.ParamWriter
+}
+
+func (wst wrSllm) WriteTo(w io.Writer) (n int64, err error) <span class="cov8" title="1">{
+        var wn int
+        if wst.log.SllmDeco == nil </span><span class="cov8" title="1">{
+                wn, err = sllm.Expand(w, wst.tmpl, wst.swp)
+        }</span> else<span class="cov0" title="0"> {
+                pw := wst.log.SllmDeco(wst.swp)
+                wn, err = sllm.Expand(w, wst.tmpl, pw)
+        }</span>
+        <span class="cov8" title="1">return int64(wn), err</span>
+}
+</pre>
 		
 		</div>
 	</body>
