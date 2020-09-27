@@ -23,6 +23,8 @@ func title() string {
 
 func Infos(msg string) { root.Infos(msg) }
 
+func Infof(fmt string, args ...interface{}) { root.Infof(fmt, args...) }
+
 func Infoa(tmpl string, args ...interface{}) { root.Infoa(tmpl, args...) }
 
 func Errora(tmpl string, args ...interface{}) { root.Errora(tmpl, args...) }
