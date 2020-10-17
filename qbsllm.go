@@ -65,6 +65,7 @@ func (l *Logger) Fmt(level Level, format string, a ...interface{}) {
 
 func (l *Logger) Args(level Level, tmpl string, args ...interface{}) {
 	l.Out(calldepth, level, wrSllm{
+		log:  l,
 		tmpl: tmpl,
 		swp:  sllm.Args(nil, args...),
 	})
@@ -72,6 +73,7 @@ func (l *Logger) Args(level Level, tmpl string, args ...interface{}) {
 
 func (l *Logger) Map(level Level, tmpl string, args sllm.ArgMap) {
 	l.Out(calldepth, level, wrSllm{
+		log:  l,
 		tmpl: tmpl,
 		swp:  sllm.Map(nil, args),
 	})
