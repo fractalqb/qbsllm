@@ -3,6 +3,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>qbsllm: Go Coverage Report</title>
 		<style>
 			body {
 				background: black;
@@ -212,6 +213,7 @@ func (l *Logger) Fmt(level Level, format string, a ...interface{}) <span class="
 
 func (l *Logger) Args(level Level, tmpl string, args ...interface{}) <span class="cov0" title="0">{
         l.Out(calldepth, level, wrSllm{
+                log:  l,
                 tmpl: tmpl,
                 swp:  sllm.Args(nil, args...),
         })
@@ -219,6 +221,7 @@ func (l *Logger) Args(level Level, tmpl string, args ...interface{}) <span class
 
 func (l *Logger) Map(level Level, tmpl string, args sllm.ArgMap) <span class="cov0" title="0">{
         l.Out(calldepth, level, wrSllm{
+                log:  l,
                 tmpl: tmpl,
                 swp:  sllm.Map(nil, args),
         })
