@@ -11,7 +11,7 @@ README.html: README.md
 deps: depgraph.svg
 
 depgraph.svg:
-	go mod graph | modgraphviz | dot -Tsvg -o $@
+	go mod graph | gomodot | dot -Tsvg -o $@
 
 # → https://blog.golang.org/cover
 cover: coverage.html
