@@ -20,7 +20,7 @@ import (
 
 var (
 	log        = qbsllm.New(qbsllm.Lnormal, "qbsqllm", nil, nil)
-	lineRegexp = regexp.MustCompile(`(.{19}) ([^ ]+)[ \t]+\[(.+)\] (.*)`)
+	lineRegexp = regexp.MustCompile(`(.{19}) ([^ ]+)[ \t]+\[(.+)\]( \([^)]*\))? (.*)`)
 	fmtHasher  = md5.New() // It's supposed to not be security critical, here
 
 	//go:embed sqlite3.sql
@@ -47,6 +47,7 @@ type entry struct {
 	Log      string
 	Form     string
 	FormHash []byte
+	Code     string
 	Args     map[string][]string
 }
 
@@ -72,11 +73,12 @@ func (e *entry) addForm(tx *sql.Tx) (id int64) {
 
 func (e *entry) addEntry(tx *sql.Tx, formId int64) (id int64) {
 	// TODO prepare and reuse
-	res, err := tx.Exec(`INSERT INTO entry (ts, level, log, fmt)
-	                     VALUES (?, ?, ?, ?)`,
+	res, err := tx.Exec(`INSERT INTO entry (ts, level, log, code, form)
+	                     VALUES (?, ?, ?, ?, ?)`,
 		e.TS,
 		e.Level,
 		e.Log,
+		sql.NullString{String: e.Code, Valid: e.Code != ""},
 		formId,
 	)
 	if err != nil {
@@ -111,20 +113,21 @@ func readLog(db *sql.DB, rd io.Reader) {
 	}
 	defer tx.Commit()
 	for scn.Scan() {
-		match := lineRegexp.FindSubmatch(scn.Bytes())
+		match := lineRegexp.FindStringSubmatch(scn.Text())
 		if match == nil {
 			log.Fatala("cannot parse `log line`", scn.Text())
 			continue
 		}
-		ts, err := time.Parse("Jan _2 15:04:05.000", string(match[1]))
+		ts, err := time.Parse("Jan _2 15:04:05.000", match[1])
 		if err != nil {
 			log.Fatale(err)
 		}
 		e := entry{
 			TS:    ts,
-			Level: string(match[2]),
-			Log:   string(match[3]),
-			Form:  string(match[4]),
+			Level: match[2],
+			Log:   match[3],
+			Code:  codeEntry(match[4]),
+			Form:  match[5],
 		}
 		fmt.Reset()
 		if e.Args, err = sllm.ParseMap(e.Form, &fmt); err != nil {
@@ -137,6 +140,10 @@ func readLog(db *sql.DB, rd io.Reader) {
 		formId := e.addForm(tx)
 		e.addEntry(tx, formId)
 	}
+}
+
+func codeEntry(raw string) string {
+	return strings.Trim(raw, "() ")
 }
 
 func readLogFile(db *sql.DB, file string) {

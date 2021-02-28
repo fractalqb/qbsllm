@@ -10,7 +10,8 @@ CREATE TABLE entry (
 , ts TEXT NOT NULL
 , level TEXT NOT NULL
 , log TEXT NOT NULL
-, fmt INTEGER NOT NULL REFERENCES form(id)
+, code TEXT
+, form INTEGER NOT NULL REFERENCES form(id)
 );
 
 CREATE TABLE args (
