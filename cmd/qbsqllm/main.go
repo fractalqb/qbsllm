@@ -19,7 +19,8 @@ import (
 )
 
 var (
-	log        = qbsllm.New(qbsllm.Lnormal, "qbsqllm", nil, nil)
+	log = qbsllm.New(qbsllm.Lnormal, "qbsqllm", nil, nil)
+	// TODO be more precise about source loc to avoid mismatch
 	lineRegexp = regexp.MustCompile(`(.{19}) ([^ ]+)[ \t]+\[(.+)\]( \([^)]*\))? (.*)`)
 	fmtHasher  = md5.New() // It's supposed to not be security critical, here
 
@@ -51,47 +52,88 @@ type entry struct {
 	Args     map[string][]string
 }
 
-func (e *entry) addForm(tx *sql.Tx) (id int64) {
-	err := tx.QueryRow(`SELECT id FROM form WHERE hash=?`, e.FormHash).Scan(&id)
-	switch {
-	case err == nil:
-		return id
-	case err != sql.ErrNoRows:
-		log.Fatale(err)
-	}
-	res, err := tx.Exec(`INSERT INTO form (hash, text) VALUES (?, ?)`,
-		e.FormHash,
-		e.Form)
-	if err != nil {
-		log.Fatale(err)
-	}
-	if id, err = res.LastInsertId(); err != nil {
-		log.Fatale(err)
-	}
-	return id
+type batch struct {
+	tx              *sql.Tx
+	stmtSelectForm  *sql.Stmt
+	stmtInsertForm  *sql.Stmt
+	stmtInsertEntry *sql.Stmt
+	stmtInsertArgs  *sql.Stmt
 }
 
-func (e *entry) addEntry(tx *sql.Tx, formId int64) (id int64) {
-	// TODO prepare and reuse
-	res, err := tx.Exec(`INSERT INTO entry (ts, level, log, code, form)
-	                     VALUES (?, ?, ?, ?, ?)`,
+func asBatch(db *sql.DB, do func(b *batch) error) (err error) {
+	b := new(batch)
+	if b.tx, err = db.Begin(); err != nil {
+		return err
+	}
+	defer b.tx.Commit()
+	if b.stmtSelectForm, err = b.tx.Prepare(sqlSelectForm); err != nil {
+		return err
+	}
+	defer b.stmtSelectForm.Close()
+	if b.stmtInsertForm, err = b.tx.Prepare(sqlInsertForm); err != nil {
+		return err
+	}
+	defer b.stmtInsertForm.Close()
+	if b.stmtInsertEntry, err = b.tx.Prepare(sqlInsertEntry); err != nil {
+		return err
+	}
+	defer b.stmtInsertEntry.Close()
+	if b.stmtInsertArgs, err = b.tx.Prepare(sqlInsertArgs); err != nil {
+		return err
+	}
+	defer b.stmtInsertArgs.Close()
+	err = do(b)
+	return err
+}
+
+const (
+	sqlSelectForm = `SELECT id FROM form WHERE hash=?`
+	sqlInsertForm = `INSERT INTO form (hash, text) VALUES (?, ?)`
+)
+
+func (e *entry) addForm(b *batch) (id int64, err error) {
+	err = b.stmtSelectForm.QueryRow(e.FormHash).Scan(&id)
+	switch {
+	case err == nil:
+		return id, nil
+	case err != sql.ErrNoRows:
+		return 0, err
+	}
+	res, err := b.stmtInsertForm.Exec(e.FormHash, e.Form)
+	if err != nil {
+		return 0, err
+	}
+	id, err = res.LastInsertId()
+	return id, err
+}
+
+const (
+	sqlInsertEntry = `INSERT INTO entry (ts, level, log, code, form, file, line)
+	                  VALUES (?, ?, ?, ?, ?, ?, ?)`
+	sqlInsertArgs = `INSERT INTO args (entry, name, value)
+			         VALUES (?, ?, ?)`
+)
+
+func (e *entry) addEntry(b *batch, formId int64, file, line int32) (id int64, err error) {
+	res, err := b.stmtInsertEntry.Exec(
 		e.TS,
 		e.Level,
 		e.Log,
 		sql.NullString{String: e.Code, Valid: e.Code != ""},
 		formId,
+		sql.NullInt32{Int32: file, Valid: file > 0},
+		line,
 	)
 	if err != nil {
-		log.Fatale(err)
+		return 0, err
 	}
 	id, err = res.LastInsertId()
 	if err != nil {
-		log.Fatale(err)
+		return 0, err
 	}
 	for key, vals := range e.Args {
 		for _, val := range vals {
-			_, err := tx.Exec(`INSERT INTO args (entry, name, value)
-			                     VALUES (?, ?, ?)`,
+			_, err := b.stmtInsertArgs.Exec(
 				id,
 				key,
 				val,
@@ -101,22 +143,18 @@ func (e *entry) addEntry(tx *sql.Tx, formId int64) (id int64) {
 			}
 		}
 	}
-	return id
+	return id, nil
 }
 
-func readLog(db *sql.DB, rd io.Reader) {
-	var fmt bytes.Buffer
+func readLog(b *batch, rd io.Reader, fileId int32) error {
+	var form bytes.Buffer
 	scn := bufio.NewScanner(rd)
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatale(err)
-	}
-	defer tx.Commit()
+	line := int32(0)
 	for scn.Scan() {
+		line++
 		match := lineRegexp.FindStringSubmatch(scn.Text())
 		if match == nil {
-			log.Fatala("cannot parse `log line`", scn.Text())
-			continue
+			return sllm.Error("cannot parse `log line`", scn.Text())
 		}
 		ts, err := time.Parse("Jan _2 15:04:05.000", match[1])
 		if err != nil {
@@ -129,17 +167,18 @@ func readLog(db *sql.DB, rd io.Reader) {
 			Code:  codeEntry(match[4]),
 			Form:  match[5],
 		}
-		fmt.Reset()
-		if e.Args, err = sllm.ParseMap(e.Form, &fmt); err != nil {
-			log.Fatale(err)
+		form.Reset()
+		if e.Args, err = sllm.ParseMap(e.Form, &form); err != nil {
+			return sllm.Error("sllm `parse error`", err)
 		}
-		e.Form = fmt.String()
+		e.Form = form.String()
 		fmtHasher.Reset()
-		fmtHasher.Write(fmt.Bytes())
+		fmtHasher.Write(form.Bytes())
 		e.FormHash = fmtHasher.Sum(nil)
-		formId := e.addForm(tx)
-		e.addEntry(tx, formId)
+		formId, err := e.addForm(b)
+		e.addEntry(b, formId, fileId, line)
 	}
+	return nil
 }
 
 func codeEntry(raw string) string {
@@ -152,7 +191,20 @@ func readLogFile(db *sql.DB, file string) {
 		log.Fatale(err)
 	}
 	defer rd.Close()
-	readLog(db, rd)
+	err = asBatch(db, func(b *batch) error {
+		res, err := b.tx.Exec(`INSERT INTO file (name) VALUES (?)`, file)
+		if err != nil {
+			return err
+		}
+		fileId, err := res.LastInsertId()
+		if err != nil {
+			return err
+		}
+		return readLog(b, rd, int32(fileId))
+	})
+	if err != nil {
+		log.Fatale(err)
+	}
 }
 
 func main() {
