@@ -6,5 +6,5 @@ git.fractalqb.de/fractalqb/qblog v0.10.1 h1:ZKYPNA7Cy/iSA2mWRsptVf+xeX+Lfzl0Nzm8
 git.fractalqb.de/fractalqb/qblog v0.10.1/go.mod h1:cQS2sL/5ZzPpCG/vjuKBfSk540bnj+w2vtF5px89L8c=
 git.fractalqb.de/fractalqb/sllm v1.0.1 h1:nw9w86xJrBXmAy+E9Sh04+03ZKSjSwTyXuoKsY3E5aU=
 git.fractalqb.de/fractalqb/sllm v1.0.1/go.mod h1:FP5GT2IDYvQvTqrosd9Dnd9BfcOeKZnp8LgPbFiJuSA=
-github.com/mattn/go-sqlite3 v1.14.7 h1:fxWBnXkxfM6sRiuH3bqJ4CfzZojMOLVc0UTsTglEghA=
-github.com/mattn/go-sqlite3 v1.14.7/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
+github.com/mattn/go-sqlite3 v1.14.8 h1:gDp86IdQsN/xWjIEmr9MF6o9mpksUgh0fu+9ByFxzIU=
+github.com/mattn/go-sqlite3 v1.14.8/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
