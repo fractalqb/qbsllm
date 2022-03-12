@@ -7,11 +7,6 @@ import (
 	"git.fractalqb.de/fractalqb/sllm"
 )
 
-const (
-	FsrcLoc  = qblog.FsrcLoc
-	FsrcPath = qblog.FsrcPath
-)
-
 type Level = qblog.Level
 
 const (
