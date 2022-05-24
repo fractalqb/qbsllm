@@ -8,6 +8,9 @@
 
 ---
 
+This lib is deprecated. [qblog](https://codeberg.org/fractalqb/qblog)
+is a replacement that features sllm as message format.
+
 This is a logging library that brings together
 
 - [Slim structured logging](https://git.fractalqb.de/fractalqb/sllm)
